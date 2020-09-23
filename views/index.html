@@ -1,79 +1,148 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>CanvasEditor</title>
-		<script src="/socket.io/socket.io.js"></script>
-		<link
-			rel="stylesheet"
-			href="https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/flatly/bootstrap.min.css"
-			integrity="sha384-qF/QmIAj5ZaYFAeQcrQ6bfVMAh4zZlrGwTPY7T/M+iTTLJqJBJjwwnsE5Y0mV7QK"
-			crossorigin="anonymous"
-		/>
-		<!-- <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.1.0/fabric.js"
-      integrity="sha512-9/jsTBmWcciMm+MBeSW2j6Xk2oPNqXgubrb0CDDvlOgGRoyxmVrwjvvsUjypTgw3hGyoze6FdhCZUzjPBKLF0g=="
-      crossorigin="anonymous"
-    ></script> -->
-	</head>
-	<body>
-		<div class="jumbotron modal-box">
-			<div class="pb-3">
-				<button class="btn btn-danger" onclick="clearDrawing()">
-					Clear Screen
-				</button>
-				<button class="arrow arrow-right stop-btn" id="close">←</button>
-			</div>
-			<div class="pb-3 pt-3">
-				<button
-					class="btn btn-primary float-left"
-					onclick="changePen()"
-				>
-					Pen
-				</button>
-				<button
-					class="btn btn-secondary float-right"
-					onclick="changeEraser()"
-				>
-					Eraser
-				</button>
-				<div class="clearfix"></div>
-			</div>
-			<div class="pb-3">
-				<h3 class="d-flex justify-content-center">Change Stroke:</h3>
-				<input
-					type="range"
-					id="weight"
-					class="custom-range"
-					min="5"
-					max="50"
-					oninput="changeWeight()"
-				/>
-			</div>
-			<div class="d-flex justify-content-center">
-				<h3 class="pr-3">Change Color:</h3>
-				<input type="text" id="colorpicker" class="" />
-			</div>
-			<div class="pt-4">
-				<button
-					class="btn btn-block btn-danger"
-					onclick="saveMyCanvas()"
-				>
-					Save
-				</button>
-			</div>
-		</div>
-		<div id="myContainer"></div>
-	</body>
-	<link rel="stylesheet" href="css/index.css" />
-	<script src="https://code.jquery.com/jquery-3.4.1.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.js"></script>
-	<link
-		rel="stylesheet"
-		type="text/css"
-		href="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.css"
-	/>
-	<script src="https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/p5.js"></script>
-	<script src="js/sketch.js"></script>
+    <head>
+        <link rel="apple-touch-icon" sizes="57x57" href="img/favicons/apple-icon-57x57.png" />
+        <link rel="apple-touch-icon" sizes="60x60" href="img/favicons/apple-icon-60x60.png" />
+        <link rel="apple-touch-icon" sizes="72x72" href="img/favicons/apple-icon-72x72.png" />
+        <link rel="apple-touch-icon" sizes="76x76" href="img/favicons/apple-icon-76x76.png" />
+        <link rel="apple-touch-icon" sizes="114x114" href="img/favicons/apple-icon-114x114.png" />
+        <link rel="apple-touch-icon" sizes="120x120" href="img/favicons/apple-icon-120x120.png" />
+        <link rel="apple-touch-icon" sizes="144x144" href="img/favicons/apple-icon-144x144.png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="img/favicons/apple-icon-152x152.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="img/favicons/apple-icon-180x180.png" />
+        <link rel="icon" type="image/png" sizes="192x192" href="img/favicons/android-icon-192x192.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="img/favicons/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="96x96" href="img/favicons/favicon-96x96.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="img/favicons/favicon-16x16.png" />
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Sketchy - Draw and Collab flawlessly!</title>
+    </head>
+    <link
+        rel="stylesheet"
+        href="https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/flatly/bootstrap.min.css"
+        integrity="sha384-qF/QmIAj5ZaYFAeQcrQ6bfVMAh4zZlrGwTPY7T/M+iTTLJqJBJjwwnsE5Y0mV7QK"
+        crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/classic.min.css" />
+    <link rel="stylesheet" href="css/main.css" />
+    <body>
+        <main role="main">
+            <div class="container-fluid">
+                <div class="row overflow-hidden">
+                    <!-- Sidebar starts -->
+                    <nav id="sidebarMenu" class="col-5 col-md-2 col-lg-1 d-md-block bg-theme sidebar collapse shadow">
+                        <a href="/"><img src="img/logo.png" class="brand-logo" alt="logo"/></a>
+                        <div class="sidebar-sticky pt-3">
+                            <ul class="nav flex-column mt-0">
+                                <li
+                                    class="nav-item"
+                                    data-toggle="tooltip"
+                                    data-placement="right"
+                                    title="Brush"
+                                    id="brush"
+                                >
+                                    <span class="iconify" data-icon="ion:brush-outline" data-inline="false"></span>
+                                </li>
+                                <li
+                                    class="nav-item"
+                                    id="toggleColorPaletteModal"
+                                    data-toggle="tooltip"
+                                    data-placement="right"
+                                    title="Color Palette"
+                                >
+                                    <span class="color-picker"></span>
+                                </li>
+                                <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Width">
+                                    <!-- Brush width -->
+                                    <input
+                                        min="1"
+                                        max="100"
+                                        value="5"
+                                        type="range"
+                                        class="form-control-range"
+                                        id="brushWidthRange"
+                                    />
+                                    <div class="d-flex justify-content-center">
+                                        <span id="brushWidthRangeLabel"></span>
+                                    </div>
+                                </li>
+                            </ul>
+                            <hr />
+                            <ul class="nav flex-column">
+                                <li
+                                    class="nav-item"
+                                    data-toggle="tooltip"
+                                    data-placement="right"
+                                    title="Eraser"
+                                    id="eraser"
+                                >
+                                    <span class="iconify" data-icon="ion:bandage-sharp" data-inline="false"></span>
+                                </li>
+                                <li
+                                    class="nav-item"
+                                    data-toggle="tooltip"
+                                    data-placement="right"
+                                    title="Clear Screen"
+                                    id="clearScreen"
+                                >
+                                    <span class="iconify" data-icon="ion:easel-outline" data-inline="false"></span>
+                                </li>
+                            </ul>
+                            <hr />
+                            <ul class="nav flex-column">
+                                <li
+                                    class="nav-item"
+                                    data-toggle="tooltip"
+                                    data-placement="right"
+                                    title="Download sketch"
+                                    id="downloadImage"
+                                >
+                                    <span class="iconify" data-icon="ion:download-outline" data-inline="false"></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </nav>
+                    <!-- Sidebar ends -->
+
+                    <!-- Canvas starts -->
+                    <div class="col-md-10 ml-sm-auto col-lg-11 p-0 canvas-wrapper">
+                        <button class="btn menu-icon">
+                            <span class="iconify" data-icon="ion:menu" data-inline="false"></span>
+                        </button>
+                        <div
+                            class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center p-0 h-100"
+                            id="canvasArea"
+                        >
+                            <!-- Insert the p5 canvas here -->
+                        </div>
+                    </div>
+                    <!-- Canvas ends -->
+                </div>
+            </div>
+        </main>
+
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"
+            integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
+            crossorigin="anonymous"
+        ></script>
+        <script src="https://code.iconify.design/1/1.0.7/iconify.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.es5.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/p5.js"></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+            integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+            crossorigin="anonymous"
+        ></script>
+        <script
+            src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+            integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
+            crossorigin="anonymous"
+        ></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="js/default.js"></script>
+        <script src="js/responsive.js"></script>
+        <script src="js/main.js"></script>
+    </body>
 </html>
